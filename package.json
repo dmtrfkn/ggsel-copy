@@ -17,6 +17,7 @@
     "race:double-click": "node scripts/double-click-buy.mjs",
     "race:empty-pool": "node scripts/empty-pool-recovery.mjs",
     "race:promo": "node scripts/race-promo.mjs",
+    "race:provider-faults": "node scripts/provider-faults.mjs",
     "race:all": "node scripts/run-all.mjs"
   },
   "dependencies": {

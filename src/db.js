@@ -18,4 +18,6 @@ export function migrate() {
   db.exec(schema);
 }
 
+migrate();
+
 export const now = () => new Date().toISOString();
