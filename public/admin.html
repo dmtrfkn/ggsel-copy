@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Админка — оплачен, но не выдан</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .wrap { max-width: 960px; margin: 30px auto; padding: 0 20px; }
+    .panel { background: #fff; border-radius: 14px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 18px; }
+    .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .bar input { border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+    .bar button { border: 0; background: var(--accent); color: #fff; border-radius: 8px; padding: 9px 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .pill { padding: 3px 8px; border-radius: 999px; font-size: 12px; background: #fef9c3; color: #a16207; }
+    .muted { color: var(--muted); }
+    .retry { border: 0; background: #e6e8eb; border-radius: 8px; padding: 6px 12px; }
+    .stats span { margin-right: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Админка</h2>
+
+    <div class="panel">
+      <div class="bar">
+        <input type="password" id="token" placeholder="admin token (dev-admin-token)" />
+        <button id="save">Подключиться</button>
+        <span class="muted" id="conn"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="bar">
+        <strong>Пул ключей:</strong>
+        <span class="stats" id="pool">—</span>
+        <button id="refill">Пополнить (+5)</button>
+        <button id="drain">Опустошить</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="bar">
+        <strong>Оплачены, но не выданы</strong>
+        <button id="reload">Обновить</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Заказ</th><th>SKU</th><th>Сумма</th><th>Статус</th><th>Причина</th><th></th></tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="6" class="muted">Подключитесь токеном</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>

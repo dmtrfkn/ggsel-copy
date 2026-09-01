@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GGSel-copy — витрина</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner">
+      <button class="catalog-btn" id="catalogBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="catalog-btn__grid"></span> Каталог
+      </button>
+
+      <div class="search">
+        <input class="search__input" type="text" placeholder="Игра, приложение или услуга..." />
+        <button class="search__fav" title="Избранное">♥</button>
+        <button class="search__go" title="Искать">⌕</button>
+      </div>
+
+      <button class="account" title="Профиль">
+        <span class="account__icon"></span>
+      </button>
+    </div>
+
+    <div class="catalog-menu" id="catalogMenu" hidden>
+      <div class="catalog-menu__inner">
+        <ul class="catalog-menu__side">
+          <li class="is-active">Игры и игровые сервисы <span>›</span></li>
+          <li>Игровые ценности <span>›</span></li>
+          <li>Мобильные игры <span>›</span></li>
+          <li>Сервисы и соцсети <span>›</span></li>
+          <li>Программы <span>›</span></li>
+        </ul>
+        <div class="catalog-menu__cols" id="catalogCols"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="banner" id="banner">
+      <div class="banner__track" id="bannerTrack"></div>
+      <div class="banner__arrows">
+        <button id="bannerPrev" aria-label="Назад">←</button>
+        <button id="bannerNext" aria-label="Вперёд">→</button>
+      </div>
+      <div class="banner__dots" id="bannerDots"></div>
+    </section>
+
+    <section class="services" id="services"></section>
+
+    <section class="topup">
+      <div class="topup__brand">
+        <span class="topup__logo">S</span>
+        <div>
+          <div class="topup__title">Пополнение Steam <span class="topup__badge">5%</span></div>
+          <button class="topup__promo-toggle" id="promoToggle">Ввести промокод ▾</button>
+        </div>
+      </div>
+
+      <div class="topup__field">
+        <input type="text" placeholder="Логин Steam" />
+        <span class="topup__info" title="Логин вводить не нужно — как в макете">i</span>
+      </div>
+
+      <div class="topup__amount">
+        <div class="topup__amount-label">Сумма</div>
+        <div class="topup__amount-value" id="topupAmount">500 ₽</div>
+        <div class="currency" id="currency">
+          <button data-cur="$" class="is-active">$</button>
+          <button data-cur="₸">₸</button>
+          <button data-cur="₽">₽</button>
+        </div>
+      </div>
+
+      <button class="topup__pay" id="topupPay">Оплатить 500$</button>
+
+      <div class="topup__promo" id="promoBox" hidden>
+        <input type="text" id="promoInput" placeholder="Промокод (WELCOME10, LIMIT3, ...)" />
+        <button id="promoApply">Применить</button>
+        <span class="topup__promo-result" id="promoResult"></span>
+      </div>
+    </section>
+
+    <section class="catalog">
+      <div class="catalog__head">
+        <h2>Популярные товары</h2>
+        <div class="chips">
+          <button class="chip is-active">Донат</button>
+          <button class="chip">Подписки</button>
+          <button class="chip">Предметы</button>
+          <button class="chip">Аккаунты</button>
+          <button class="chip">Ключи</button>
+          <button class="chip">Игровая валюта</button>
+          <button class="chip">Другое</button>
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal__box">
+      <button class="modal__close" id="modalClose">×</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

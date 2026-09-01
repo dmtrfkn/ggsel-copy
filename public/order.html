@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Статус заказа</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .wrap { max-width: 620px; margin: 40px auto; padding: 0 20px; }
+    .panel { background: #fff; border-radius: 14px; box-shadow: var(--shadow); padding: 24px; }
+    .status-line { display: flex; gap: 10px; align-items: center; margin: 18px 0; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+    .b-created { background: #e5e7eb; color: #374151; }
+    .b-paid, .b-delivering { background: #dbeafe; color: #1d4ed8; }
+    .b-delivered { background: #dcfce7; color: #15803d; }
+    .b-payment_failed { background: #fee2e2; color: #b91c1c; }
+    .b-out_of_stock, .b-delivery_failed { background: #fef9c3; color: #a16207; }
+    .key-box { font-family: ui-monospace, Menlo, monospace; font-size: 20px; background: #0d0f13; color: #fff; padding: 16px; border-radius: 12px; text-align: center; letter-spacing: 2px; }
+    .steps { list-style: none; padding: 0; margin: 16px 0 0; }
+    .steps li { padding: 6px 0; color: var(--muted); }
+    .steps li.done { color: var(--ink); }
+    .steps li.done::before { content: '✓ '; color: var(--green); }
+    a.back { display: inline-block; margin-top: 18px; color: var(--muted); }
+    .recover { margin-top: 14px; font-size: 14px; color: #a16207; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h2>Заказ <span id="oid"></span></h2>
+      <div class="status-line">
+        <span>Статус:</span>
+        <span class="badge" id="badge">…</span>
+      </div>
+      <div id="content"></div>
+      <ul class="steps" id="steps">
+        <li data-s="created">Заказ создан</li>
+        <li data-s="paid">Оплата подтверждена</li>
+        <li data-s="delivering">Идёт выдача</li>
+        <li data-s="delivered">Ключ выдан</li>
+      </ul>
+      <a class="back" href="/">← на витрину</a>
+    </div>
+  </div>
+  <script src="order.js"></script>
+</body>
+</html>
