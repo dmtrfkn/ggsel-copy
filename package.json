@@ -1,0 +1,26 @@
+{
+  "name": "ggsel-copy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Digital goods store: storefront + exactly-once key delivery under races, failure recovery, promo limits",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node src/seed.js",
+    "reset": "node src/seed.js --reset",
+    "race:webhooks": "node scripts/race-webhooks.mjs",
+    "race:webhooks-distinct": "node scripts/race-webhooks-distinct.mjs",
+    "race:out-of-order": "node scripts/webhook-before-order.mjs",
+    "race:double-click": "node scripts/double-click-buy.mjs",
+    "race:empty-pool": "node scripts/empty-pool-recovery.mjs",
+    "race:promo": "node scripts/race-promo.mjs",
+    "race:all": "node scripts/run-all.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2"
+  }
+}
