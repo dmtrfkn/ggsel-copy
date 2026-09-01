@@ -2,11 +2,12 @@ import express from 'express';
 import { db } from '../db.js';
 import { createOrder, getOrder } from '../services/orders.js';
 import { previewPromo } from '../services/promo.js';
+import { reconcileOrder } from '../services/reconcile.js';
 
 const router = express.Router();
 const getProductPrice = db.prepare('SELECT price FROM products WHERE sku = ?');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { sku, promo_code: promoCode, idempotency_key: idempotencyKey, order_id: clientOrderId } =
     req.body || {};
   if (!sku) return res.status(400).json({ error: 'sku_required' });
@@ -19,7 +20,17 @@ router.post('/', (req, res) => {
   });
 
   if (result.error) return res.status(result.status || 400).json({ error: result.error });
-  res.status(result.reused ? 200 : 201).json({ order: result.order, reused: !!result.reused });
+
+  if (!result.reused) {
+    try {
+      await reconcileOrder(result.order.id);
+    } catch (err) {
+      console.error('reconcile after order creation failed:', err);
+    }
+  }
+
+  const order = getOrder(result.order.id);
+  res.status(result.reused ? 200 : 201).json({ order, reused: !!result.reused });
 });
 
 router.post('/preview-promo', (req, res) => {
