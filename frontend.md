@@ -15,8 +15,8 @@
 
 ### Шапка `<header class="header">`
 - `button#catalogBtn` - кнопка «Каталог», `aria-haspopup`, `aria-expanded` переключается из JS.
-- `.search` - поле поиска с иконкой «сердце» и «лупа» (некликабельны, как в макете).
-- `button.account` - иконка профиля (заглушка).
+- `.search` - поле поиска с инлайн-SVG иконками «сердце» и «лупа» (некликабельны, как в макете).
+- `button.account` - инлайн-SVG иконка профиля (заглушка).
 - `.catalog-menu#catalogMenu` с атрибутом `hidden` - выпадающее мега-меню. Левая
   колонка `.catalog-menu__side` (разделы), правая `#catalogCols` - колонки брендов,
   наполняются из JS.
@@ -40,7 +40,8 @@
   `#promoApply`, `#promoResult`.
 
 ### Каталог товаров `<section class="catalog">`
-- Заголовок «Популярные товары» + чипсы-фильтры (`Донат`, `Подписки`, ... - статичные).
+- Заголовок «Популярные товары» + контейнер `#chips`, чипсы-фильтры рендерит JS
+  (переключение активного чипса работает, самой фильтрации нет - по ТЗ достаточно).
 - `.cards#cards` - сетка карточек, наполняется из JS.
 
 ### Модалка `<div class="modal" id="modal" hidden>`
@@ -65,7 +66,7 @@
 ```css
 .service { transition: transform .18s ease, box-shadow .18s ease; }
 .service:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-.service:hover .service__ico { filter: brightness(1.12) saturate(1.15); transform: scale(1.06); }
+.service:hover .service__ico img { filter: brightness(1.08) saturate(1.12); transform: scale(1.06); }
 ```
 Плавное выделение при наведении - целиком на CSS-переходах.
 
@@ -112,15 +113,24 @@ async function api(path, options) {
 `api()` - обёртка над `fetch`: всегда JSON, при не-2xx кидает ошибку с `.data` и `.status`.
 
 ```js
-function svgTile(label, color) { ... 'data:image/svg+xml;utf8,' ... }
+const svg = (body, w, h) => `data:image/svg+xml,${encodeURIComponent('<svg ...>' + body + '</svg>')}`;
+const appIcon = (bg, inner) => svg(`<rect ... rx="15" fill="${bg}"/>${inner}`);
+function gamePoster() { return svg(`... BATTLEGROUNDS ...`, 320, 200); }
 ```
-Генерирует инлайновую SVG-картинку (цветной прямоугольник с инициалами) как `data:`-URL.
-Так карточкам и иконкам не нужны файлы-ассеты - наполнение по ТЗ не оценивается.
+Все картинки рисуются инлайновым SVG и подставляются как `data:`-URL, файлов-ассетов
+нет (CSP это не задевает, наполнение по ТЗ не оценивается).
+- `serviceIcons` - словарь бренд-иконок сервисов (Steam, Telegram, TikTok и т.д.):
+  скруглённый квадрат брендового цвета + простой глиф.
+- `gamePoster()` - постер в стиле «PLAYERUNKNOWN'S BATTLEGROUNDS», один на все карточки
+  (в макете арт на карточках одинаковый).
+- `toast(message)` - всплывающее уведомление внизу экрана (используется для
+  нереализованных разделов каталога).
 
 ### Данные (константы в файле)
 `bannerSlides` - 5 слайдов (заголовок, текст, градиент фона).
-`services` - подписи иконок из макета (Steam, Telegram, Roblox, ...).
+`services` - `Object.keys(serviceIcons)`, подписи под иконками.
 `catalogColumns` - структура мега-меню (Steam / PlayStation / Xbox / Nintendo / Battle.net).
+`chips` - фильтры над карточками (название + эмодзи-иконка), рендерятся в `#chips`.
 
 ### [Интерактив 1] Баннер-карусель - `renderBanner()`
 ```js
@@ -157,6 +167,9 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(fa
 - `e.stopPropagation()` не даёт этому же клику сразу попасть в обработчик «клик вне».
 - Клик в любом месте вне меню и не по кнопке - закрывает.
 - `Escape` - закрывает.
+- Нереализованные разделы и колонки помечены бейджем «скоро»; клик по любой такой
+  ссылке перехватывается (`e.preventDefault()`) и показывает `toast(...)` вместо
+  перехода в никуда.
 
 ### [Интерактив 3] Переключатель валют - `renderCurrency()`
 ```js
@@ -180,7 +193,7 @@ $('#currency').addEventListener('click', (e) => {
 ```js
 const data = await api('/api/catalog/products');
 products = data.products;
-$('#cards').innerHTML = products.slice(0, 10).map((p, i) => `<article class="card" data-sku="${p.sku}"> ... Купить ...`).join('');
+$('#cards').innerHTML = products.slice(0, 5).map((p) => `<article class="card" data-sku="${p.sku}"> ... Купить ...`).join('');
 $('#cards').addEventListener('click', (e) => {
   const buy = e.target.closest('.card__buy');
   if (!buy) return;
@@ -225,10 +238,14 @@ $('#topupPay').addEventListener('click', () => openBuy('STEAM-TOPUP-500', $('#pr
 Тот же флоу, но для `STEAM-TOPUP-500` и с промокодом из блока Steam - так этап 4
 проходится через UI целиком.
 
+### `renderServices()` / `renderChips()`
+Строят ряд иконок сервисов (бренд-иконка + подпись, последняя плитка «еще 841») и
+ряд чипсов-фильтров в `#chips`. У чипсов клик переключает активный класс.
+
 ### Инициализация (низ файла)
 ```js
 renderBanner(); renderCatalogMenu(); renderServices();
-renderCurrency(); renderPromoBox(); renderCards();
+renderCurrency(); renderChips(); renderPromoBox(); renderCards();
 ```
 
 ---
