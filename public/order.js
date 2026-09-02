@@ -1,5 +1,5 @@
 const id = new URLSearchParams(location.search).get('id');
-document.getElementById('oid').textContent = id || '—';
+document.getElementById('oid').textContent = id || '-';
 
 const order = ['created', 'paid', 'delivering', 'delivered'];
 const labels = {
@@ -47,10 +47,10 @@ async function tick() {
   } else if (o.status === 'out_of_stock' || o.status === 'delivery_failed') {
     content.innerHTML =
       `<div class="recover">Оплата прошла, но ключ пока не выдан (${o.recovery_reason}). ` +
-      `Заказ в восстановимом состоянии — после пополнения пула выдача произойдёт автоматически ` +
+      `Заказ в восстановимом состоянии - после пополнения пула выдача произойдёт автоматически ` +
       `или вручную из админки. Страница обновляется сама.</div>`;
   } else {
-    content.innerHTML = '<p>Обрабатываем заказ…</p>';
+    content.innerHTML = '<p>Обрабатываем заказ...</p>';
   }
 
   if (!stop) setTimeout(tick, 1000);

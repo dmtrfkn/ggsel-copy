@@ -27,8 +27,8 @@ const after = await stats();
 
 console.log(`  ответов 200: ${results.filter((r) => r.status === 200).length}/50, "duplicate": ${dupes}`);
 console.log(`  статус заказа: ${order?.status}, ключ: ${order?.delivery?.code}`);
-console.log(`  пул claimed: ${before.pool.claimed} → ${after.pool.claimed}`);
-console.log(`  записей выдачи: ${before.deliveries} → ${after.deliveries}\n`);
+console.log(`  пул claimed: ${before.pool.claimed} -> ${after.pool.claimed}`);
+console.log(`  записей выдачи: ${before.deliveries} -> ${after.deliveries}\n`);
 
 check(order?.status === 'delivered', 'заказ доведён до delivered');
 check(dupes === 0, 'все 50 событий уникальны (не duplicate)');

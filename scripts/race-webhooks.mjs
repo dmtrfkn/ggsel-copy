@@ -28,9 +28,9 @@ const after = await stats();
 
 console.log(`  ответов 200: ${ok200}/50, из них "duplicate": ${dupes}`);
 console.log(`  статус заказа: ${order?.status}, ключ: ${order?.delivery?.code}`);
-console.log(`  пул claimed: ${before.pool.claimed} → ${after.pool.claimed}`);
-console.log(`  записей выдачи: ${before.deliveries} → ${after.deliveries}`);
-console.log(`  выдач поставщика: ${before.provider_issues} → ${after.provider_issues}\n`);
+console.log(`  пул claimed: ${before.pool.claimed} -> ${after.pool.claimed}`);
+console.log(`  записей выдачи: ${before.deliveries} -> ${after.deliveries}`);
+console.log(`  выдач поставщика: ${before.provider_issues} -> ${after.provider_issues}\n`);
 
 check(order?.status === 'delivered', 'заказ доведён до delivered');
 check(dupes === 49, '49 из 50 вебхуков отсечены как повтор event_id');

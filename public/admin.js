@@ -29,12 +29,12 @@ async function load() {
               <td>${o.sku}</td>
               <td>${o.amount} ${o.currency}</td>
               <td><span class="pill">${o.status}</span></td>
-              <td class="muted">${o.recovery_reason || '—'}</td>
+              <td class="muted">${o.recovery_reason || '-'}</td>
               <td><button class="retry" data-id="${o.id}">Повторить выдачу</button></td>
             </tr>`
           )
           .join('')
-      : '<tr><td colspan="6" class="muted">Пусто — все оплаченные заказы выданы</td></tr>';
+      : '<tr><td colspan="6" class="muted">Пусто - все оплаченные заказы выданы</td></tr>';
   } catch (e) {
     $('#conn').textContent = e.status === 401 ? 'неверный токен' : 'ошибка';
   }

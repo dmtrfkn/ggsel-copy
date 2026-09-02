@@ -75,5 +75,5 @@ try {
 }
 
 console.log('\n' + '='.repeat(70));
-console.log(failed === 0 ? 'ИТОГ: все сценарии прошли' : `ИТОГ: провалено сценариев — ${failed}`);
+console.log(failed === 0 ? 'ИТОГ: все сценарии прошли' : `ИТОГ: провалено сценариев - ${failed}`);
 process.exit(failed === 0 ? 0 : 1);

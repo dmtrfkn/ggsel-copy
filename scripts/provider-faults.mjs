@@ -5,7 +5,7 @@ await ensureServer();
 const setFaults = (provider, faults) =>
   post(`/provider-${provider}/config`, faults, ADMIN);
 
-console.log('Сценарий 7: сбои поставщиков — ловушка таймаута и переключение на резервного\n');
+console.log('Сценарий 7: сбои поставщиков - ловушка таймаута и переключение на резервного\n');
 
 console.log('  A) поставщик A всегда "зависает" (timeout), повтор с тем же request_id должен вернуть тот же ключ');
 await reset();
@@ -40,7 +40,7 @@ check(order?.status === 'delivered', 'заказ выдан резервным �
 check(order?.delivery?.provider === 'B', 'выдача пришла именно от B');
 check(after.pool.claimed - before.pool.claimed === 1, 'израсходован ровно один ключ');
 
-console.log('\n  C) оба поставщика падают 5xx → восстановимое состояние, затем чиним и добираем');
+console.log('\n  C) оба поставщика падают 5xx -> восстановимое состояние, затем чиним и добираем');
 await reset();
 await setFaults('a', { errorRate: 1, timeoutRate: 0 });
 await setFaults('b', { errorRate: 1, timeoutRate: 0 });
@@ -49,7 +49,7 @@ before = await stats();
 ({ data: created } = await post('/api/orders', { sku: 'KEY-EFT' }));
 await post('/api/pay/' + created.order.id, { result: 'success' });
 order = await waitForStatus(created.order.id, ['delivery_failed', 'out_of_stock'], 15000);
-check(order?.status === 'delivery_failed', 'оба поставщика недоступны → статус delivery_failed (без падения)');
+check(order?.status === 'delivery_failed', 'оба поставщика недоступны -> статус delivery_failed (без падения)');
 
 await setFaults('a', { errorRate: 0, timeoutRate: 0 });
 await post('/admin/orders/' + created.order.id + '/retry', {}, ADMIN);

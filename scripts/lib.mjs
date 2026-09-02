@@ -58,5 +58,5 @@ export function check(condition, message) {
 
 export function summary(title) {
   if (failures === 0) console.log(`\n${title}: ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ\n`);
-  else console.log(`\n${title}: ПРОВАЛЕНО ПРОВЕРОК — ${failures}\n`);
+  else console.log(`\n${title}: ПРОВАЛЕНО ПРОВЕРОК - ${failures}\n`);
 }

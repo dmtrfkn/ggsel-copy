@@ -3,7 +3,7 @@ import { ensureServer, reset, post, get, stats, waitForStatus, check, summary, A
 await ensureServer();
 await reset();
 
-console.log('Сценарий 5: пул закончился в момент выдачи → восстановимое состояние → пополнение → повторная выдача\n');
+console.log('Сценарий 5: пул закончился в момент выдачи -> восстановимое состояние -> пополнение -> повторная выдача\n');
 
 console.log('  1) опустошаем пул ключей');
 await post('/admin/pool/drain', {}, ADMIN);
@@ -35,12 +35,12 @@ check(order?.status === 'delivered', 'после пополнения повто
 
 const s1 = await stats();
 
-console.log('  4) повторяем retry ещё раз — должно быть идемпотентно');
+console.log('  4) повторяем retry ещё раз - должно быть идемпотентно');
 await post('/admin/orders/' + orderId + '/retry', {}, ADMIN);
 await post('/admin/orders/' + orderId + '/retry', {}, ADMIN);
 const s2 = await stats();
 
-console.log(`  выдач: ${s1.deliveries} → ${s2.deliveries}, ключей израсходовано: ${s1.pool.claimed} → ${s2.pool.claimed}`);
+console.log(`  выдач: ${s1.deliveries} -> ${s2.deliveries}, ключей израсходовано: ${s1.pool.claimed} -> ${s2.pool.claimed}`);
 check(s2.deliveries === s1.deliveries, 'повторный retry не создал вторую запись выдачи');
 check(s2.pool.claimed === s1.pool.claimed, 'повторный retry не израсходовал второй ключ');
 check(order?.delivery?.code, `ключ выдан: ${order?.delivery?.code}`);
