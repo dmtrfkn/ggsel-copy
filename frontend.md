@@ -113,22 +113,21 @@ async function api(path, options) {
 `api()` - обёртка над `fetch`: всегда JSON, при не-2xx кидает ошибку с `.data` и `.status`.
 
 ```js
-const svg = (body, w, h) => `data:image/svg+xml,${encodeURIComponent('<svg ...>' + body + '</svg>')}`;
-const appIcon = (bg, inner) => svg(`<rect ... rx="15" fill="${bg}"/>${inner}`);
-function gamePoster() { return svg(`... BATTLEGROUNDS ...`, 320, 200); }
+const palette = ['#1b2838', '#229ed9', ...];
+const colorFor = (i) => palette[i % palette.length];
+const initial  = (name) => name.match(/[A-Za-zА-Яа-я0-9]/)[0].toUpperCase();
+const PRODUCT_IMAGE = 'assets/pubg.avif';
 ```
-Все картинки рисуются инлайновым SVG и подставляются как `data:`-URL, файлов-ассетов
-нет (CSP это не задевает, наполнение по ТЗ не оценивается).
-- `serviceIcons` - словарь бренд-иконок сервисов (Steam, Telegram, TikTok и т.д.):
-  скруглённый квадрат брендового цвета + простой глиф.
-- `gamePoster()` - постер в стиле «PLAYERUNKNOWN'S BATTLEGROUNDS», один на все карточки
-  (в макете арт на карточках одинаковый).
-- `toast(message)` - всплывающее уведомление внизу экрана (используется для
-  нереализованных разделов каталога).
+- Иконки сервисов - простые плитки: скруглённый квадрат цвета из `palette` + первая
+  буква названия. Файлов-ассетов для них нет.
+- Карточки товара показывают одно реальное изображение `public/assets/pubg.avif`
+  (в макете арт на всех карточках одинаковый); лежит в репозитории.
+- `toast(message)` - всплывающее уведомление внизу экрана (для нереализованных
+  разделов каталога).
 
 ### Данные (константы в файле)
 `bannerSlides` - 5 слайдов (заголовок, текст, градиент фона).
-`services` - `Object.keys(serviceIcons)`, подписи под иконками.
+`services` - список названий сервисов (Steam, Telegram, Roblox, ...).
 `catalogColumns` - структура мега-меню (Steam / PlayStation / Xbox / Nintendo / Battle.net).
 `chips` - фильтры над карточками (название + эмодзи-иконка), рендерятся в `#chips`.
 
@@ -239,7 +238,7 @@ $('#topupPay').addEventListener('click', () => openBuy('STEAM-TOPUP-500', $('#pr
 проходится через UI целиком.
 
 ### `renderServices()` / `renderChips()`
-Строят ряд иконок сервисов (бренд-иконка + подпись, последняя плитка «еще 841») и
+Строят ряд иконок сервисов (плитка с первой буквой + подпись, последняя плитка «еще 841») и
 ряд чипсов-фильтров в `#chips`. У чипсов клик переключает активный класс.
 
 ### Инициализация (низ файла)
