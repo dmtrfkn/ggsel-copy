@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ggsel-copy
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ENABLE_DEBUG
+        value: "1"
+      - key: ALLOW_CLIENT_ORDER_ID
+        value: "1"
+      - key: ADMIN_TOKEN
+        value: dev-admin-token

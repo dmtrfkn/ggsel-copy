@@ -29,7 +29,7 @@ if (config.enableDebug) app.use('/debug', makeDebugRouter());
 
 app.use(express.static(path.join(config.root, 'public')));
 
-app.listen(config.port, () => {
-  console.log(`ggsel-copy running on http://localhost:${config.port}`);
+app.listen(config.port, '0.0.0.0', () => {
+  console.log(`ggsel-copy running on port ${config.port}`);
   startRecoveryLoop();
 });
