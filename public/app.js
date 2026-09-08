@@ -289,7 +289,10 @@ async function resyncCatalog() {
 
 const modal = $('#modal');
 const modalBody = $('#modalBody');
-const closeModal = () => { modal.hidden = true; };
+const closeModal = () => {
+  modal.hidden = true;
+  onProductUpdateForModal = () => {};
+};
 $('#modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
@@ -300,18 +303,26 @@ function openBuy(sku, presetPromo = '') {
 
   const idem = 'idem_' + crypto.randomUUID();
   let appliedPromo = null;
+  let stage = 'draw';
+  let shownPrice = product.price;
+  let priceNote = '';
+  const cur = () => products.find((p) => p.sku === sku) || product;
 
   const draw = (note = '') => {
+    const p = cur();
+    shownPrice = p.price;
+    const soldOut = p.stock <= 0;
     modalBody.innerHTML = `
       <h3>Оформление заказа</h3>
-      <div class="m-row"><span>${product.name}</span><b>${product.price} ₽</b></div>
+      <div class="m-row"><span>${p.name}</span><b>${p.price} ₽</b></div>
+      ${priceNote ? `<div class="m-note warn">${priceNote}</div>` : ''}
       <div class="m-promo">
         <input type="text" id="mPromo" placeholder="Промокод" value="${presetPromo}" />
         <button id="mPromoBtn">Применить</button>
       </div>
       <div class="m-note ${note.startsWith('OK') ? 'ok' : note ? 'err' : ''}" id="mNote">${note.replace(/^OK:? ?/, '')}</div>
       <div class="m-actions">
-        <button class="btn-primary" id="mCreate">Создать заказ</button>
+        <button class="btn-primary" id="mCreate" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Раскуплено' : 'Создать заказ'}</button>
       </div>`;
 
     $('#mPromoBtn').addEventListener('click', async () => {
@@ -350,12 +361,16 @@ function openBuy(sku, presetPromo = '') {
   };
 
   const drawPay = (order) => {
+    stage = 'pay';
+    const raised = order.base_amount > shownPrice;
     modalBody.innerHTML = `
       <h3>Заказ ${order.id}</h3>
       <div class="m-row"><span>Товар</span><span>${order.sku}</span></div>
+      <div class="m-row"><span>Цена</span><span>${order.base_amount} ₽</span></div>
       <div class="m-row"><span>Скидка</span><span>-${order.discount} ₽</span></div>
       <div class="m-row"><span>К оплате</span><b>${order.amount} ${order.currency}</b></div>
-      <p class="m-note">Реальной оплаты нет - это вебхук-заглушка по контракту.</p>
+      ${raised ? `<div class="m-note warn">Учтена актуальная цена ${order.base_amount} ₽ (на витрине было ${shownPrice} ₽). Сумма заказа зафиксирована.</div>` : ''}
+      <p class="m-note">Сумма зафиксирована в заказе, дальнейшие изменения цены на него не влияют. Реальной оплаты нет - вебхук-заглушка по контракту.</p>
       <div class="m-actions">
         <button class="btn-primary" id="payOk">Оплатить - успех</button>
         <button class="btn-danger" id="payFail">Оплатить - неуспех</button>
@@ -369,6 +384,17 @@ function openBuy(sku, presetPromo = '') {
     };
     $('#payOk').addEventListener('click', () => pay('success'));
     $('#payFail').addEventListener('click', () => pay('failed'));
+  };
+
+  onProductUpdateForModal = (p) => {
+    if (p.sku !== sku || stage !== 'draw') return;
+    if (p.price !== shownPrice) {
+      priceNote =
+        p.price > shownPrice
+          ? `Товар подорожал: было ${shownPrice} ₽, стало ${p.price} ₽`
+          : `Цена снизилась: было ${shownPrice} ₽, стало ${p.price} ₽`;
+    }
+    draw();
   };
 
   draw();
