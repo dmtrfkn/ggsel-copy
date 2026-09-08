@@ -2,11 +2,20 @@ import express from 'express';
 import { db } from '../db.js';
 import { seed } from '../seed-core.js';
 import { providerFaults } from './providers.js';
+import { publish, _stats as streamStats } from '../services/events.js';
 
 export function makeDebugRouter() {
   const router = express.Router();
 
   router.get('/health', (req, res) => res.json({ ok: true }));
+
+  router.get('/stream', (req, res) => res.json(streamStats()));
+
+  router.post('/publish', (req, res) => {
+    const { type = 'debug', data = {} } = req.body || {};
+    const id = publish(type, data);
+    res.json({ ok: true, id });
+  });
 
   router.get('/stats', (req, res) => {
     const ordersByStatus = db
