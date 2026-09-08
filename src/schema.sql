@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS products (
   type       TEXT NOT NULL,
   price      INTEGER NOT NULL,
   currency   TEXT NOT NULL,
-  image      TEXT
+  image      TEXT,
+  stock      INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS key_pool (

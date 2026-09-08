@@ -299,7 +299,11 @@ button { font: inherit; cursor: pointer; }
 .card__price { display: flex; align-items: baseline; gap: 8px; }
 .card__price b { color: var(--green); font-size: 16px; }
 .card__price s { color: var(--muted); font-size: 12px; }
-.card__buy { margin-top: auto; border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 10px; font-weight: 700; }
+.card__stock { font-size: 12px; color: var(--muted); }
+.card__stock.is-low { color: #f0932b; font-weight: 700; }
+.card__stock.is-out { color: #e2231a; font-weight: 700; }
+.card__buy { margin-top: auto; border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 10px; font-weight: 700; cursor: pointer; }
+.card__buy:disabled { background: #c9ccd1; color: #6b7178; cursor: not-allowed; }
 
 .modal {
   position: fixed;

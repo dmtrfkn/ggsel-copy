@@ -4,10 +4,10 @@ import { db } from '../db.js';
 const router = express.Router();
 
 const listProducts = db.prepare(
-  'SELECT sku, name, type, price, currency, image FROM products ORDER BY rowid'
+  'SELECT sku, name, type, price, currency, image, stock FROM products ORDER BY rowid'
 );
 const getProduct = db.prepare(
-  'SELECT sku, name, type, price, currency, image FROM products WHERE sku = ?'
+  'SELECT sku, name, type, price, currency, image, stock FROM products WHERE sku = ?'
 );
 
 router.get('/products', (req, res) => {

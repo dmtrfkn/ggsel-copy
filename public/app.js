@@ -195,27 +195,31 @@ function renderPromoBox() {
 
 let products = [];
 
+function cardHtml(p) {
+  const old = Math.round(p.price * 1.5);
+  const soldOut = p.stock <= 0;
+  const low = !soldOut && p.stock <= 5;
+  const stockClass = soldOut ? 'is-out' : low ? 'is-low' : '';
+  const stockText = soldOut ? 'Нет в наличии' : `В наличии: ${p.stock}`;
+  return `<article class="card" data-sku="${p.sku}">
+    <div class="card__media"><img alt="${p.name}" src="${PRODUCT_IMAGE}" loading="lazy" /></div>
+    <div class="card__body">
+      <div class="card__title">${p.name}</div>
+      <div class="card__price"><b>${p.price} ₽</b><s>${old} ₽</s></div>
+      <div class="card__stock ${stockClass}">${stockText}</div>
+      <button class="card__buy" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Раскуплено' : 'Купить'}</button>
+    </div>
+  </article>`;
+}
+
 async function renderCards() {
   const data = await api('/api/catalog/products');
   products = data.products;
-  $('#cards').innerHTML = products
-    .slice(0, 5)
-    .map((p) => {
-      const old = Math.round(p.price * 1.5);
-      return `<article class="card" data-sku="${p.sku}">
-        <div class="card__media"><img alt="${p.name}" src="${PRODUCT_IMAGE}" loading="lazy" /></div>
-        <div class="card__body">
-          <div class="card__title">${p.name}</div>
-          <div class="card__price"><b>${p.price} ₽</b><s>${old} ₽</s></div>
-          <button class="card__buy">Купить</button>
-        </div>
-      </article>`;
-    })
-    .join('');
+  $('#cards').innerHTML = products.slice(0, 5).map(cardHtml).join('');
 
   $('#cards').addEventListener('click', (e) => {
     const buy = e.target.closest('.card__buy');
-    if (!buy) return;
+    if (!buy || buy.disabled) return;
     const sku = e.target.closest('.card').dataset.sku;
     openBuy(sku);
   });
