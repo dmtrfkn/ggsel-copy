@@ -42,6 +42,20 @@
 
     <div class="panel">
       <div class="bar">
+        <strong>Каталог / склад</strong>
+        <button id="reloadCat">Обновить</button>
+        <span class="muted">меняет цену/остаток и сразу шлёт событие в живую витрину</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>Название</th><th>Цена</th><th>Остаток</th><th></th></tr>
+        </thead>
+        <tbody id="catRows"><tr><td colspan="5" class="muted">Подключитесь токеном</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="bar">
         <strong>Оплачены, но не выданы</strong>
         <button id="reload">Обновить</button>
       </div>

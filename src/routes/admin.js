@@ -2,6 +2,7 @@ import express from 'express';
 import { db, now } from '../db.js';
 import { config } from '../config.js';
 import { attemptFulfillment } from '../services/fulfillment.js';
+import { listInventory, setProductFields } from '../services/inventory.js';
 
 const router = express.Router();
 
@@ -29,6 +30,20 @@ const poolStats = () => ({
 
 router.get('/orders/unfulfilled', (req, res) => {
   res.json({ orders: unfulfilled.all(), pool: poolStats() });
+});
+
+router.get('/products', (req, res) => {
+  res.json({ products: listInventory() });
+});
+
+router.post('/products/:sku', (req, res) => {
+  const { price, stock } = req.body || {};
+  const result = setProductFields(req.params.sku, {
+    price: price === undefined || price === '' ? undefined : Number(price),
+    stock: stock === undefined || stock === '' ? undefined : Number(stock),
+  });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
 });
 
 router.post('/orders/:id/retry', async (req, res) => {
