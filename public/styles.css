@@ -305,6 +305,10 @@ button { font: inherit; cursor: pointer; }
 .card__buy { margin-top: auto; border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 10px; font-weight: 700; cursor: pointer; }
 .card__buy:disabled { background: #c9ccd1; color: #6b7178; cursor: not-allowed; }
 
+.conn-dot { position: fixed; left: 16px; bottom: 16px; z-index: 60; font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 999px; box-shadow: var(--shadow); }
+.conn-dot--live { background: #dcfce7; color: #15803d; }
+.conn-dot--reconnecting { background: #fee2e2; color: #b91c1c; }
+
 .modal {
   position: fixed;
   inset: 0;

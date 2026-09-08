@@ -212,17 +212,79 @@ function cardHtml(p) {
   </article>`;
 }
 
+let visibleSkus = [];
+
 async function renderCards() {
   const data = await api('/api/catalog/products');
   products = data.products;
+  visibleSkus = products.slice(0, 5).map((p) => p.sku);
   $('#cards').innerHTML = products.slice(0, 5).map(cardHtml).join('');
+}
 
-  $('#cards').addEventListener('click', (e) => {
-    const buy = e.target.closest('.card__buy');
-    if (!buy || buy.disabled) return;
-    const sku = e.target.closest('.card').dataset.sku;
-    openBuy(sku);
+$('#cards').addEventListener('click', (e) => {
+  const buy = e.target.closest('.card__buy');
+  if (!buy || buy.disabled) return;
+  openBuy(e.target.closest('.card').dataset.sku);
+});
+
+function patchCard(p) {
+  const card = $(`.card[data-sku="${p.sku}"]`);
+  if (card) card.outerHTML = cardHtml(p);
+}
+
+function applyProductUpdate({ sku, price, stock }) {
+  const p = products.find((x) => x.sku === sku);
+  if (!p) return;
+  if (price != null) p.price = price;
+  if (stock != null) p.stock = stock;
+  if (visibleSkus.includes(sku)) patchCard(p);
+  onProductUpdateForModal(p);
+}
+
+let onProductUpdateForModal = () => {};
+
+function setConn(state) {
+  let dot = $('#connDot');
+  if (!dot) {
+    dot = document.createElement('div');
+    dot.id = 'connDot';
+    document.body.appendChild(dot);
+  }
+  dot.className = 'conn-dot conn-dot--' + state;
+  dot.textContent = state === 'live' ? 'обновления в реальном времени' : 'переподключение...';
+  dot.hidden = false;
+  if (state === 'live') {
+    clearTimeout(setConn._t);
+    setConn._t = setTimeout(() => { dot.hidden = true; }, 2000);
+  }
+}
+
+function connectStream() {
+  let everOpen = false;
+  const es = new EventSource('/api/stream');
+
+  es.addEventListener('product.updated', (e) => {
+    try { applyProductUpdate(JSON.parse(e.data)); } catch {}
   });
+
+  es.onopen = () => {
+    setConn('live');
+    if (everOpen) resyncCatalog();
+    everOpen = true;
+  };
+
+  es.onerror = () => setConn('reconnecting');
+}
+
+async function resyncCatalog() {
+  try {
+    const data = await api('/api/catalog/products');
+    products = data.products;
+    for (const p of products) {
+      if (visibleSkus.includes(p.sku)) patchCard(p);
+      onProductUpdateForModal(p);
+    }
+  } catch {}
 }
 
 const modal = $('#modal');
@@ -322,4 +384,4 @@ renderServices();
 renderCurrency();
 renderChips();
 renderPromoBox();
-renderCards();
+renderCards().then(connectStream);
