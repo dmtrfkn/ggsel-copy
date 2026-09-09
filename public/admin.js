@@ -40,10 +40,58 @@ async function load() {
   }
 }
 
+async function loadCatalog() {
+  if (!token) return;
+  try {
+    const { products } = await adm('/admin/products');
+    $('#catRows').innerHTML = products
+      .map(
+        (p) => `<tr>
+          <td>${p.sku}</td>
+          <td>${p.name}</td>
+          <td><input type="number" class="c-price" data-sku="${p.sku}" value="${p.price}" min="0" step="1" style="width:90px" /></td>
+          <td><input type="number" class="c-stock" data-sku="${p.sku}" value="${p.stock}" min="0" step="1" style="width:70px" /></td>
+          <td><button class="retry c-apply" data-sku="${p.sku}">Применить</button></td>
+        </tr>`
+      )
+      .join('');
+  } catch (e) {
+    $('#catRows').innerHTML = `<tr><td colspan="5" class="muted">${
+      e.status === 401 ? 'неверный токен' : 'ошибка загрузки'
+    }</td></tr>`;
+  }
+}
+
+$('#catRows').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.c-apply');
+  if (!btn) return;
+  const sku = btn.dataset.sku;
+  const price = $(`.c-price[data-sku="${sku}"]`).value;
+  const stock = $(`.c-stock[data-sku="${sku}"]`).value;
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    await adm('/admin/products/' + encodeURIComponent(sku), {
+      method: 'POST',
+      body: JSON.stringify({ price, stock }),
+    });
+    btn.textContent = 'ок';
+  } catch {
+    btn.textContent = 'ошибка';
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Применить';
+    }, 900);
+  }
+});
+$('#reloadCat').addEventListener('click', loadCatalog);
+
 $('#save').addEventListener('click', () => {
   token = $('#token').value.trim();
   localStorage.setItem('adminToken', token);
   load();
+  loadCatalog();
 });
 $('#reload').addEventListener('click', load);
 
@@ -69,3 +117,4 @@ $('#rows').addEventListener('click', async (e) => {
 });
 
 load();
+loadCatalog();

@@ -25,13 +25,13 @@ export function seed({ reset = false } = {}) {
   const apply = db.transaction(() => {
     const { products } = readJson('catalog.json');
     const insProduct = db.prepare(
-      `INSERT INTO products (sku, name, type, price, currency, image)
-       VALUES (@sku, @name, @type, @price, @currency, @image)
+      `INSERT INTO products (sku, name, type, price, currency, image, stock)
+       VALUES (@sku, @name, @type, @price, @currency, @image, @stock)
        ON CONFLICT(sku) DO UPDATE SET
          name = excluded.name, type = excluded.type,
          price = excluded.price, currency = excluded.currency, image = excluded.image`
     );
-    for (const p of products) insProduct.run(p);
+    for (const p of products) insProduct.run({ stock: 0, ...p });
 
     const { keys } = readJson('keys.json');
     const insKey = db.prepare(`INSERT OR IGNORE INTO key_pool (code, status) VALUES (?, 'free')`);

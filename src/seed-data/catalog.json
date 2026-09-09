@@ -1,17 +1,18 @@
 {
   "currency_note": "Базовая цена в RUB. Переключатель валют ($/₸/₽) в макете только отображение, пересчёт делать не нужно.",
+  "stock_note": "Остаток создан самостоятельно под этап 2. Мелкие значения (KEY-EFT, GIFT-XBOX-1500) удобны для демонстрации обнуления и гонки за последней единицей.",
   "products": [
-    { "sku": "STEAM-TOPUP-500",  "name": "Пополнение Steam 500 ₽",        "type": "topup",        "price": 500,   "currency": "RUB", "image": "assets/steam.svg" },
-    { "sku": "STEAM-TOPUP-1000", "name": "Пополнение Steam 1000 ₽",       "type": "topup",        "price": 1000,  "currency": "RUB", "image": "assets/steam.svg" },
-    { "sku": "STEAM-TOPUP-2500", "name": "Пополнение Steam 2500 ₽",       "type": "topup",        "price": 2500,  "currency": "RUB", "image": "assets/steam.svg" },
-    { "sku": "KEY-CS2-PRIME",    "name": "CS2 Prime Status ключ",         "type": "key",          "price": 1290,  "currency": "RUB", "image": "assets/cs2.svg" },
-    { "sku": "KEY-GTA5",         "name": "GTA V ключ активации",          "type": "key",          "price": 1990,  "currency": "RUB", "image": "assets/gta5.svg" },
-    { "sku": "KEY-EFT",          "name": "Escape from Tarkov ключ",       "type": "key",          "price": 3490,  "currency": "RUB", "image": "assets/eft.svg" },
-    { "sku": "SUB-DISCORD-1M",   "name": "Discord Nitro 1 месяц",         "type": "subscription", "price": 399,   "currency": "RUB", "image": "assets/discord.svg" },
-    { "sku": "SUB-YT-3M",        "name": "YouTube Premium 3 месяца",      "type": "subscription", "price": 1490,  "currency": "RUB", "image": "assets/youtube.svg" },
-    { "sku": "SUB-SPOTIFY-1M",   "name": "Spotify Premium 1 месяц",       "type": "subscription", "price": 299,   "currency": "RUB", "image": "assets/spotify.svg" },
-    { "sku": "GIFT-PSN-1000",    "name": "PlayStation Store карта 1000 ₽", "type": "giftcard",     "price": 1000,  "currency": "RUB", "image": "assets/psn.svg" },
-    { "sku": "GIFT-XBOX-1500",   "name": "Xbox Gift Card 1500 ₽",         "type": "giftcard",     "price": 1500,  "currency": "RUB", "image": "assets/xbox.svg" },
-    { "sku": "GIFT-ROBLOX-800",  "name": "Roblox 800 Robux",              "type": "giftcard",     "price": 890,   "currency": "RUB", "image": "assets/roblox.svg" }
+    { "sku": "STEAM-TOPUP-500",  "name": "Пополнение Steam 500 ₽",        "type": "topup",        "price": 500,   "currency": "RUB", "image": "assets/steam.svg",   "stock": 200 },
+    { "sku": "STEAM-TOPUP-1000", "name": "Пополнение Steam 1000 ₽",       "type": "topup",        "price": 1000,  "currency": "RUB", "image": "assets/steam.svg",   "stock": 150 },
+    { "sku": "STEAM-TOPUP-2500", "name": "Пополнение Steam 2500 ₽",       "type": "topup",        "price": 2500,  "currency": "RUB", "image": "assets/steam.svg",   "stock": 40 },
+    { "sku": "KEY-CS2-PRIME",    "name": "CS2 Prime Status ключ",         "type": "key",          "price": 1290,  "currency": "RUB", "image": "assets/cs2.svg",     "stock": 8 },
+    { "sku": "KEY-GTA5",         "name": "GTA V ключ активации",          "type": "key",          "price": 1990,  "currency": "RUB", "image": "assets/gta5.svg",    "stock": 5 },
+    { "sku": "KEY-EFT",          "name": "Escape from Tarkov ключ",       "type": "key",          "price": 3490,  "currency": "RUB", "image": "assets/eft.svg",     "stock": 3 },
+    { "sku": "SUB-DISCORD-1M",   "name": "Discord Nitro 1 месяц",         "type": "subscription", "price": 399,   "currency": "RUB", "image": "assets/discord.svg", "stock": 25 },
+    { "sku": "SUB-YT-3M",        "name": "YouTube Premium 3 месяца",      "type": "subscription", "price": 1490,  "currency": "RUB", "image": "assets/youtube.svg", "stock": 12 },
+    { "sku": "SUB-SPOTIFY-1M",   "name": "Spotify Premium 1 месяц",       "type": "subscription", "price": 299,   "currency": "RUB", "image": "assets/spotify.svg", "stock": 40 },
+    { "sku": "GIFT-PSN-1000",    "name": "PlayStation Store карта 1000 ₽", "type": "giftcard",     "price": 1000,  "currency": "RUB", "image": "assets/psn.svg",     "stock": 7 },
+    { "sku": "GIFT-XBOX-1500",   "name": "Xbox Gift Card 1500 ₽",         "type": "giftcard",     "price": 1500,  "currency": "RUB", "image": "assets/xbox.svg",    "stock": 4 },
+    { "sku": "GIFT-ROBLOX-800",  "name": "Roblox 800 Robux",              "type": "giftcard",     "price": 890,   "currency": "RUB", "image": "assets/roblox.svg",  "stock": 0 }
   ]
 }

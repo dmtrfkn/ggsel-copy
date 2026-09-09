@@ -195,35 +195,104 @@ function renderPromoBox() {
 
 let products = [];
 
+function cardHtml(p) {
+  const old = Math.round(p.price * 1.5);
+  const soldOut = p.stock <= 0;
+  const low = !soldOut && p.stock <= 5;
+  const stockClass = soldOut ? 'is-out' : low ? 'is-low' : '';
+  const stockText = soldOut ? 'Нет в наличии' : `В наличии: ${p.stock}`;
+  return `<article class="card" data-sku="${p.sku}">
+    <div class="card__media"><img alt="${p.name}" src="${PRODUCT_IMAGE}" loading="lazy" /></div>
+    <div class="card__body">
+      <div class="card__title">${p.name}</div>
+      <div class="card__price"><b>${p.price} ₽</b><s>${old} ₽</s></div>
+      <div class="card__stock ${stockClass}">${stockText}</div>
+      <button class="card__buy" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Раскуплено' : 'Купить'}</button>
+    </div>
+  </article>`;
+}
+
+let visibleSkus = [];
+
 async function renderCards() {
   const data = await api('/api/catalog/products');
   products = data.products;
-  $('#cards').innerHTML = products
-    .slice(0, 5)
-    .map((p) => {
-      const old = Math.round(p.price * 1.5);
-      return `<article class="card" data-sku="${p.sku}">
-        <div class="card__media"><img alt="${p.name}" src="${PRODUCT_IMAGE}" loading="lazy" /></div>
-        <div class="card__body">
-          <div class="card__title">${p.name}</div>
-          <div class="card__price"><b>${p.price} ₽</b><s>${old} ₽</s></div>
-          <button class="card__buy">Купить</button>
-        </div>
-      </article>`;
-    })
-    .join('');
+  visibleSkus = products.slice(0, 5).map((p) => p.sku);
+  $('#cards').innerHTML = products.slice(0, 5).map(cardHtml).join('');
+}
 
-  $('#cards').addEventListener('click', (e) => {
-    const buy = e.target.closest('.card__buy');
-    if (!buy) return;
-    const sku = e.target.closest('.card').dataset.sku;
-    openBuy(sku);
+$('#cards').addEventListener('click', (e) => {
+  const buy = e.target.closest('.card__buy');
+  if (!buy || buy.disabled) return;
+  openBuy(e.target.closest('.card').dataset.sku);
+});
+
+function patchCard(p) {
+  const card = $(`.card[data-sku="${p.sku}"]`);
+  if (card) card.outerHTML = cardHtml(p);
+}
+
+function applyProductUpdate({ sku, price, stock }) {
+  const p = products.find((x) => x.sku === sku);
+  if (!p) return;
+  if (price != null) p.price = price;
+  if (stock != null) p.stock = stock;
+  if (visibleSkus.includes(sku)) patchCard(p);
+  onProductUpdateForModal(p);
+}
+
+let onProductUpdateForModal = () => {};
+
+function setConn(state) {
+  let dot = $('#connDot');
+  if (!dot) {
+    dot = document.createElement('div');
+    dot.id = 'connDot';
+    document.body.appendChild(dot);
+  }
+  dot.className = 'conn-dot conn-dot--' + state;
+  dot.textContent = state === 'live' ? 'обновления в реальном времени' : 'переподключение...';
+  dot.hidden = false;
+  if (state === 'live') {
+    clearTimeout(setConn._t);
+    setConn._t = setTimeout(() => { dot.hidden = true; }, 2000);
+  }
+}
+
+function connectStream() {
+  let everOpen = false;
+  const es = new EventSource('/api/stream');
+
+  es.addEventListener('product.updated', (e) => {
+    try { applyProductUpdate(JSON.parse(e.data)); } catch {}
   });
+
+  es.onopen = () => {
+    setConn('live');
+    if (everOpen) resyncCatalog();
+    everOpen = true;
+  };
+
+  es.onerror = () => setConn('reconnecting');
+}
+
+async function resyncCatalog() {
+  try {
+    const data = await api('/api/catalog/products');
+    products = data.products;
+    for (const p of products) {
+      if (visibleSkus.includes(p.sku)) patchCard(p);
+      onProductUpdateForModal(p);
+    }
+  } catch {}
 }
 
 const modal = $('#modal');
 const modalBody = $('#modalBody');
-const closeModal = () => { modal.hidden = true; };
+const closeModal = () => {
+  modal.hidden = true;
+  onProductUpdateForModal = () => {};
+};
 $('#modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
@@ -234,18 +303,26 @@ function openBuy(sku, presetPromo = '') {
 
   const idem = 'idem_' + crypto.randomUUID();
   let appliedPromo = null;
+  let stage = 'draw';
+  let shownPrice = product.price;
+  let priceNote = '';
+  const cur = () => products.find((p) => p.sku === sku) || product;
 
   const draw = (note = '') => {
+    const p = cur();
+    shownPrice = p.price;
+    const soldOut = p.stock <= 0;
     modalBody.innerHTML = `
       <h3>Оформление заказа</h3>
-      <div class="m-row"><span>${product.name}</span><b>${product.price} ₽</b></div>
+      <div class="m-row"><span>${p.name}</span><b>${p.price} ₽</b></div>
+      ${priceNote ? `<div class="m-note warn">${priceNote}</div>` : ''}
       <div class="m-promo">
         <input type="text" id="mPromo" placeholder="Промокод" value="${presetPromo}" />
         <button id="mPromoBtn">Применить</button>
       </div>
       <div class="m-note ${note.startsWith('OK') ? 'ok' : note ? 'err' : ''}" id="mNote">${note.replace(/^OK:? ?/, '')}</div>
       <div class="m-actions">
-        <button class="btn-primary" id="mCreate">Создать заказ</button>
+        <button class="btn-primary" id="mCreate" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Раскуплено' : 'Создать заказ'}</button>
       </div>`;
 
     $('#mPromoBtn').addEventListener('click', async () => {
@@ -284,12 +361,16 @@ function openBuy(sku, presetPromo = '') {
   };
 
   const drawPay = (order) => {
+    stage = 'pay';
+    const raised = order.base_amount > shownPrice;
     modalBody.innerHTML = `
       <h3>Заказ ${order.id}</h3>
       <div class="m-row"><span>Товар</span><span>${order.sku}</span></div>
+      <div class="m-row"><span>Цена</span><span>${order.base_amount} ₽</span></div>
       <div class="m-row"><span>Скидка</span><span>-${order.discount} ₽</span></div>
       <div class="m-row"><span>К оплате</span><b>${order.amount} ${order.currency}</b></div>
-      <p class="m-note">Реальной оплаты нет - это вебхук-заглушка по контракту.</p>
+      ${raised ? `<div class="m-note warn">Учтена актуальная цена ${order.base_amount} ₽ (на витрине было ${shownPrice} ₽). Сумма заказа зафиксирована.</div>` : ''}
+      <p class="m-note">Сумма зафиксирована в заказе, дальнейшие изменения цены на него не влияют. Реальной оплаты нет - вебхук-заглушка по контракту.</p>
       <div class="m-actions">
         <button class="btn-primary" id="payOk">Оплатить - успех</button>
         <button class="btn-danger" id="payFail">Оплатить - неуспех</button>
@@ -305,6 +386,17 @@ function openBuy(sku, presetPromo = '') {
     $('#payFail').addEventListener('click', () => pay('failed'));
   };
 
+  onProductUpdateForModal = (p) => {
+    if (p.sku !== sku || stage !== 'draw') return;
+    if (p.price !== shownPrice) {
+      priceNote =
+        p.price > shownPrice
+          ? `Товар подорожал: было ${shownPrice} ₽, стало ${p.price} ₽`
+          : `Цена снизилась: было ${shownPrice} ₽, стало ${p.price} ₽`;
+    }
+    draw();
+  };
+
   draw();
 }
 
@@ -318,4 +410,4 @@ renderServices();
 renderCurrency();
 renderChips();
 renderPromoBox();
-renderCards();
+renderCards().then(connectStream);
