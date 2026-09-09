@@ -18,6 +18,14 @@ const mmss = (ms) => {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 };
 
+const TERMINAL = ['delivered', 'payment_failed', 'expired'];
+const clearPendingIfMine = () => {
+  try {
+    const p = JSON.parse(localStorage.getItem('ggsel_pending') || 'null');
+    if (p && p.id === id) localStorage.removeItem('ggsel_pending');
+  } catch {}
+};
+
 let stop = false;
 
 async function tick() {
@@ -69,6 +77,7 @@ async function tick() {
     content.innerHTML = '<p>Обрабатываем заказ...</p>';
   }
 
+  if (TERMINAL.includes(o.status)) clearPendingIfMine();
   if (!stop) setTimeout(tick, 1000);
 }
 
