@@ -61,6 +61,7 @@ const scripts = [
   'race-promo.mjs',
   'provider-faults.mjs',
   'last-unit-race.mjs',
+  'reservation-timer.mjs',
 ];
 
 let failed = 0;
