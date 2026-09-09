@@ -342,6 +342,9 @@ button { font: inherit; cursor: pointer; }
 .m-note.ok { color: var(--green); }
 .m-note.err { color: #dc2626; }
 .m-note.warn { color: #b45309; background: #fef3c7; border-radius: 8px; padding: 8px 10px; font-weight: 700; }
+.alt-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.alt-list .alt { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+.alt-list .alt:hover { border-color: #c9ccd1; background: #f7f8fa; }
 
 @media (max-width: 1000px) {
   .services { grid-template-columns: repeat(6, 1fr); }

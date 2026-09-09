@@ -26,6 +26,9 @@ export function migrate() {
   if (!hasColumn('products', 'stock')) {
     db.exec(`ALTER TABLE products ADD COLUMN stock INTEGER NOT NULL DEFAULT 0`);
   }
+  if (!hasColumn('orders', 'stock_held')) {
+    db.exec(`ALTER TABLE orders ADD COLUMN stock_held INTEGER NOT NULL DEFAULT 0`);
+  }
 }
 
 migrate();

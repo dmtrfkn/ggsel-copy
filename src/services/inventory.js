@@ -12,6 +12,29 @@ export function listInventory() {
   return listProducts.all();
 }
 
+const claimStmt = db.prepare(
+  'UPDATE products SET stock = stock - 1 WHERE sku = @sku AND stock > 0',
+);
+const restoreStmt = db.prepare('UPDATE products SET stock = stock + 1 WHERE sku = @sku');
+
+export function claimStock(sku) {
+  return claimStmt.run({ sku }).changes === 1;
+}
+
+export function restoreStock(sku) {
+  restoreStmt.run({ sku });
+}
+
+export function suggestAlternatives(sku, limit = 3) {
+  return db
+    .prepare(
+      `SELECT sku, name, price, currency, stock FROM products
+        WHERE sku != @sku AND stock > 0
+        ORDER BY rowid LIMIT @limit`,
+    )
+    .all({ sku, limit });
+}
+
 export function emitProduct(sku) {
   const p = getProduct.get(sku);
   if (p) publish('product.updated', { sku: p.sku, price: p.price, stock: p.stock });

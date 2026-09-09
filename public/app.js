@@ -354,10 +354,41 @@ function openBuy(sku, presetPromo = '') {
         });
         drawPay(r.order);
       } catch (e) {
+        if (e.data?.error === 'out_of_stock') {
+          const p = products.find((x) => x.sku === sku);
+          if (p) {
+            p.stock = 0;
+            if (visibleSkus.includes(sku)) patchCard(p);
+          }
+          drawSoldOut(e.data);
+          return;
+        }
         $('#mCreate').disabled = false;
         draw(e.data?.error === 'promo_limit_reached' ? 'Лимит промокода исчерпан' : 'Не удалось создать заказ');
       }
     });
+  };
+
+  const drawSoldOut = (data) => {
+    stage = 'lost';
+    const alts = data?.alternatives || [];
+    modalBody.innerHTML = `
+      <h3>Не получилось</h3>
+      <div class="m-note warn">${data?.message || 'Этот товар только что раскупили'}. Последнюю единицу оформили за секунду до вас — оплата с вас не списана.</div>
+      ${
+        alts.length
+          ? `<p class="m-note">Есть в наличии:</p><div class="alt-list">${alts
+              .map((a) => `<button class="alt" data-sku="${a.sku}">${a.name} - ${a.price} ₽</button>`)
+              .join('')}</div>`
+          : ''
+      }
+      <div class="m-actions">
+        <button class="btn-primary" id="backCatalog">Вернуться к каталогу</button>
+      </div>`;
+    $('#backCatalog').addEventListener('click', closeModal);
+    modalBody.querySelectorAll('.alt').forEach((b) =>
+      b.addEventListener('click', () => openBuy(b.dataset.sku))
+    );
   };
 
   const drawPay = (order) => {
