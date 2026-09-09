@@ -19,9 +19,9 @@ const getDelivery = db.prepare('SELECT code, provider, delivered_at FROM deliver
 
 const insertOrder = db.prepare(`
   INSERT INTO orders
-    (id, idempotency_key, sku, base_amount, discount, amount, currency, promo_code, status, stock_held, created_at, updated_at)
+    (id, idempotency_key, sku, base_amount, discount, amount, currency, promo_code, status, stock_held, reserved_until, created_at, updated_at)
   VALUES
-    (@id, @idempotencyKey, @sku, @baseAmount, @discount, @amount, @currency, @promoCode, 'created', 1, @ts, @ts)
+    (@id, @idempotencyKey, @sku, @baseAmount, @discount, @amount, @currency, @promoCode, 'created', 1, @reservedUntil, @ts, @ts)
 `);
 
 export function getOrder(id) {
@@ -41,6 +41,7 @@ const createTx = db.transaction(({ id, product, promo, idempotencyKey }) => {
   if (!claimStock(product.sku)) throw new OrderRejected('out_of_stock', 409);
 
   const amount = Math.max(0, product.price - discount);
+  const ts = now();
   insertOrder.run({
     id,
     idempotencyKey: idempotencyKey || null,
@@ -50,7 +51,8 @@ const createTx = db.transaction(({ id, product, promo, idempotencyKey }) => {
     amount,
     currency: product.currency,
     promoCode: promo ? promo.code : null,
-    ts: now(),
+    reservedUntil: new Date(Date.now() + config.reservationMs).toISOString(),
+    ts,
   });
 });
 

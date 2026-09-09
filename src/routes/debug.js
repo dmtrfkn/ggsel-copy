@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { seed } from '../seed-core.js';
 import { providerFaults } from './providers.js';
 import { publish, _stats as streamStats } from '../services/events.js';
+import { expireNow } from '../services/reservations.js';
 
 export function makeDebugRouter() {
   const router = express.Router();
@@ -46,6 +47,11 @@ export function makeDebugRouter() {
   router.post('/reset', (req, res) => {
     const result = seed({ reset: true });
     res.json({ ok: true, seed: result });
+  });
+
+  router.post('/orders/:id/expire-reservation', (req, res) => {
+    const freed = expireNow(req.params.id);
+    res.json({ ok: true, freed });
   });
 
   return router;

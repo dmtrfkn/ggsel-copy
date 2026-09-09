@@ -8,8 +8,14 @@ const labels = {
   delivering: 'идёт выдача',
   delivered: 'выдан',
   payment_failed: 'оплата не прошла',
+  expired: 'бронь истекла',
   out_of_stock: 'оплачен, ключа нет в наличии',
   delivery_failed: 'оплачен, выдача не удалась',
+};
+
+const mmss = (ms) => {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 };
 
 let stop = false;
@@ -49,6 +55,16 @@ async function tick() {
       `<div class="recover">Оплата прошла, но ключ пока не выдан (${o.recovery_reason}). ` +
       `Заказ в восстановимом состоянии - после пополнения пула выдача произойдёт автоматически ` +
       `или вручную из админки. Страница обновляется сама.</div>`;
+  } else if (o.status === 'expired') {
+    content.innerHTML =
+      '<div class="recover">Бронь истекла - время на оплату вышло. Товар возвращён в продажу, ' +
+      'оплата не списана. <a href="/">Вернуться в каталог</a>.</div>';
+    stop = true;
+  } else if (o.status === 'created' && o.reserved_until) {
+    const left = Date.parse(o.reserved_until) - Date.now();
+    content.innerHTML =
+      '<p>Заказ создан, ждём оплату.</p>' +
+      `<div class="res-timer${left <= 30000 ? ' is-soon' : ''}">Бронь снята через ${mmss(left)}</div>`;
   } else {
     content.innerHTML = '<p>Обрабатываем заказ...</p>';
   }

@@ -29,6 +29,9 @@ export function migrate() {
   if (!hasColumn('orders', 'stock_held')) {
     db.exec(`ALTER TABLE orders ADD COLUMN stock_held INTEGER NOT NULL DEFAULT 0`);
   }
+  if (!hasColumn('orders', 'reserved_until')) {
+    db.exec(`ALTER TABLE orders ADD COLUMN reserved_until TEXT`);
+  }
 }
 
 migrate();

@@ -14,6 +14,9 @@ export const config = {
 
   providerTimeoutMs: num(process.env.PROVIDER_TIMEOUT_MS, 2500),
 
+  reservationMs: Math.round(num(process.env.RESERVATION_MINUTES, 3) * 60000),
+  reservationSweepMs: num(process.env.RESERVATION_SWEEP_MS, 3000),
+
   providerA: {
     errorRate: num(process.env.PROVIDER_A_ERROR_RATE, 0),
     timeoutRate: num(process.env.PROVIDER_A_TIMEOUT_RATE, 0),

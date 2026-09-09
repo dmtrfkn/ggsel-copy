@@ -19,6 +19,7 @@
     "race:promo": "node scripts/race-promo.mjs",
     "race:provider-faults": "node scripts/provider-faults.mjs",
     "race:last-unit": "node scripts/last-unit-race.mjs",
+    "race:reservation": "node scripts/reservation-timer.mjs",
     "race:all": "node scripts/run-all.mjs"
   },
   "dependencies": {
