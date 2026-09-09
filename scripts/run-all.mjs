@@ -62,6 +62,7 @@ const scripts = [
   'provider-faults.mjs',
   'last-unit-race.mjs',
   'reservation-timer.mjs',
+  'resilience.mjs',
 ];
 
 let failed = 0;
