@@ -345,6 +345,8 @@ button { font: inherit; cursor: pointer; }
 .alt-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
 .alt-list .alt { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 10px 12px; font-weight: 600; }
 .alt-list .alt:hover { border-color: #c9ccd1; background: #f7f8fa; }
+.m-timer, .res-timer { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: #eef2ff; color: #3730a3; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.m-timer.is-soon, .res-timer.is-soon { background: #fee2e2; color: #b91c1c; }
 
 @media (max-width: 1000px) {
   .services { grid-template-columns: repeat(6, 1fr); }

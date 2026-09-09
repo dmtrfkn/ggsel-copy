@@ -289,9 +289,15 @@ async function resyncCatalog() {
 
 const modal = $('#modal');
 const modalBody = $('#modalBody');
+let modalTimer = null;
+const clearModalTimer = () => {
+  if (modalTimer) clearInterval(modalTimer);
+  modalTimer = null;
+};
 const closeModal = () => {
   modal.hidden = true;
   onProductUpdateForModal = () => {};
+  clearModalTimer();
 };
 $('#modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
@@ -391,9 +397,23 @@ function openBuy(sku, presetPromo = '') {
     );
   };
 
+  const drawExpired = () => {
+    stage = 'lost';
+    clearModalTimer();
+    modalBody.innerHTML = `
+      <h3>Бронь истекла</h3>
+      <div class="m-note warn">Время на оплату вышло, бронь снята и товар вернулся в продажу. Оплата не списана.</div>
+      <div class="m-actions">
+        <button class="btn-primary" id="backCatalog">Вернуться к каталогу</button>
+      </div>`;
+    $('#backCatalog').addEventListener('click', closeModal);
+  };
+
   const drawPay = (order) => {
     stage = 'pay';
+    clearModalTimer();
     const raised = order.base_amount > shownPrice;
+    const until = order.reserved_until ? Date.parse(order.reserved_until) : 0;
     modalBody.innerHTML = `
       <h3>Заказ ${order.id}</h3>
       <div class="m-row"><span>Товар</span><span>${order.sku}</span></div>
@@ -401,6 +421,7 @@ function openBuy(sku, presetPromo = '') {
       <div class="m-row"><span>Скидка</span><span>-${order.discount} ₽</span></div>
       <div class="m-row"><span>К оплате</span><b>${order.amount} ${order.currency}</b></div>
       ${raised ? `<div class="m-note warn">Учтена актуальная цена ${order.base_amount} ₽ (на витрине было ${shownPrice} ₽). Сумма заказа зафиксирована.</div>` : ''}
+      ${until ? `<div class="m-timer" id="resTimer"></div>` : ''}
       <p class="m-note">Сумма зафиксирована в заказе, дальнейшие изменения цены на него не влияют. Реальной оплаты нет - вебхук-заглушка по контракту.</p>
       <div class="m-actions">
         <button class="btn-primary" id="payOk">Оплатить - успех</button>
@@ -410,11 +431,31 @@ function openBuy(sku, presetPromo = '') {
     const pay = async (result) => {
       $('#payOk').disabled = true;
       $('#payFail').disabled = true;
-      await api('/api/pay/' + order.id, { method: 'POST', body: JSON.stringify({ result }) });
+      clearModalTimer();
+      try {
+        await api('/api/pay/' + order.id, { method: 'POST', body: JSON.stringify({ result }) });
+      } catch (e) {
+        if (e.data?.error === 'reservation_expired') return drawExpired();
+        throw e;
+      }
       location.href = 'order.html?id=' + encodeURIComponent(order.id);
     };
     $('#payOk').addEventListener('click', () => pay('success'));
     $('#payFail').addEventListener('click', () => pay('failed'));
+
+    if (until) {
+      const tick = () => {
+        const t = $('#resTimer');
+        if (!t) return clearModalTimer();
+        const ms = until - Date.now();
+        if (ms <= 0) return drawExpired();
+        const s = Math.ceil(ms / 1000);
+        t.textContent = `Бронь снята через ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+        t.classList.toggle('is-soon', ms <= 30000);
+      };
+      tick();
+      modalTimer = setInterval(tick, 1000);
+    }
   };
 
   onProductUpdateForModal = (p) => {
