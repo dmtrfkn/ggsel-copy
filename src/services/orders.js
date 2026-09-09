@@ -2,6 +2,15 @@ import crypto from 'node:crypto';
 import { db, now } from '../db.js';
 import { config } from '../config.js';
 import { getPromo, computeDiscount, redeemPromoWithin } from './promo.js';
+import { claimStock, emitProduct } from './inventory.js';
+
+class OrderRejected extends Error {
+  constructor(error, status) {
+    super(error);
+    this.error = error;
+    this.status = status;
+  }
+}
 
 const getProduct = db.prepare('SELECT * FROM products WHERE sku = ?');
 const getOrderRow = db.prepare('SELECT * FROM orders WHERE id = ?');
@@ -10,9 +19,9 @@ const getDelivery = db.prepare('SELECT code, provider, delivered_at FROM deliver
 
 const insertOrder = db.prepare(`
   INSERT INTO orders
-    (id, idempotency_key, sku, base_amount, discount, amount, currency, promo_code, status, created_at, updated_at)
+    (id, idempotency_key, sku, base_amount, discount, amount, currency, promo_code, status, stock_held, created_at, updated_at)
   VALUES
-    (@id, @idempotencyKey, @sku, @baseAmount, @discount, @amount, @currency, @promoCode, 'created', @ts, @ts)
+    (@id, @idempotencyKey, @sku, @baseAmount, @discount, @amount, @currency, @promoCode, 'created', 1, @ts, @ts)
 `);
 
 export function getOrder(id) {
@@ -25,9 +34,12 @@ const createTx = db.transaction(({ id, product, promo, idempotencyKey }) => {
   let discount = 0;
   if (promo) {
     const redeemed = redeemPromoWithin(promo.code, id);
-    if (!redeemed.ok) return { error: 'promo_limit_reached', status: 409 };
+    if (!redeemed.ok) throw new OrderRejected('promo_limit_reached', 409);
     discount = computeDiscount(promo, product.price);
   }
+
+  if (!claimStock(product.sku)) throw new OrderRejected('out_of_stock', 409);
+
   const amount = Math.max(0, product.price - discount);
   insertOrder.run({
     id,
@@ -40,7 +52,6 @@ const createTx = db.transaction(({ id, product, promo, idempotencyKey }) => {
     promoCode: promo ? promo.code : null,
     ts: now(),
   });
-  return { ok: true };
 });
 
 export function createOrder({ sku, promoCode, idempotencyKey, clientOrderId }) {
@@ -64,9 +75,9 @@ export function createOrder({ sku, promoCode, idempotencyKey, clientOrderId }) {
       : `ord_${crypto.randomUUID().slice(0, 12)}`;
 
   try {
-    const result = createTx({ id, product, promo, idempotencyKey });
-    if (result.error) return result;
+    createTx({ id, product, promo, idempotencyKey });
   } catch (err) {
+    if (err instanceof OrderRejected) return { error: err.error, status: err.status };
     if (/UNIQUE/i.test(String(err.message))) {
       const existing = idempotencyKey ? getOrderByIdem.get(idempotencyKey) : getOrderRow.get(id);
       if (existing) return { order: getOrder(existing.id), reused: true };
@@ -74,5 +85,6 @@ export function createOrder({ sku, promoCode, idempotencyKey, clientOrderId }) {
     throw err;
   }
 
+  emitProduct(product.sku);
   return { order: getOrder(id) };
 }

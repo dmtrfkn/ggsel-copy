@@ -6,9 +6,10 @@ const getOrder = db.prepare('SELECT * FROM orders WHERE id = ?');
 const hasEvent = db.prepare(
   'SELECT 1 FROM payment_events WHERE order_id = ? AND status = ? LIMIT 1'
 );
-const consumeStock = db.prepare(
-  `UPDATE products SET stock = stock - 1 WHERE sku = @sku AND stock > 0`
+const releaseHold = db.prepare(
+  `UPDATE orders SET stock_held = 0 WHERE id = @id AND stock_held = 1`
 );
+const restoreStock = db.prepare(`UPDATE products SET stock = stock + 1 WHERE sku = @sku`);
 
 const applyPaymentState = db.transaction((orderId) => {
   const order = getOrder.get(orderId);
@@ -16,22 +17,23 @@ const applyPaymentState = db.transaction((orderId) => {
 
   const paid = hasEvent.get(orderId, 'paid');
   const failed = hasEvent.get(orderId, 'failed');
-  let stockConsumed = false;
+  let stockReleased = false;
 
   if (order.status === 'created') {
     if (paid) {
+      db.prepare(
+        `UPDATE orders SET status = 'paid', updated_at = @ts WHERE id = @id AND status = 'created'`
+      ).run({ id: orderId, ts: now() });
+    } else if (failed) {
       const moved = db
         .prepare(
-          `UPDATE orders SET status = 'paid', updated_at = @ts WHERE id = @id AND status = 'created'`
+          `UPDATE orders SET status = 'payment_failed', updated_at = @ts WHERE id = @id AND status = 'created'`
         )
         .run({ id: orderId, ts: now() });
-      if (moved.changes === 1) {
-        stockConsumed = consumeStock.run({ sku: order.sku }).changes === 1;
+      if (moved.changes === 1 && releaseHold.run({ id: orderId }).changes === 1) {
+        restoreStock.run({ sku: order.sku });
+        stockReleased = true;
       }
-    } else if (failed) {
-      db.prepare(
-        `UPDATE orders SET status = 'payment_failed', updated_at = @ts WHERE id = @id AND status = 'created'`
-      ).run({ id: orderId, ts: now() });
     }
   }
 
@@ -39,14 +41,14 @@ const applyPaymentState = db.transaction((orderId) => {
     `UPDATE payment_events SET processed_at = @ts WHERE order_id = @id AND processed_at IS NULL`
   ).run({ id: orderId, ts: now() });
 
-  return { order: getOrder.get(orderId), stockConsumed, sku: order.sku };
+  return { order: getOrder.get(orderId), stockReleased, sku: order.sku };
 });
 
 export async function reconcileOrder(orderId) {
-  const { buffered, order, stockConsumed, sku } = applyPaymentState(orderId);
+  const { buffered, order, stockReleased, sku } = applyPaymentState(orderId);
   if (buffered) return { buffered: true };
 
-  if (stockConsumed) emitProduct(sku);
+  if (stockReleased) emitProduct(sku);
 
   if (['paid', 'delivering', 'out_of_stock', 'delivery_failed'].includes(order.status)) {
     await attemptFulfillment(orderId);

@@ -26,7 +26,7 @@ const finalizeDelivery = db.transaction((orderId, code, requestId, provider) => 
 
   db.prepare(`
     UPDATE orders
-       SET status = 'delivered', recovery_reason = NULL, updated_at = @ts
+       SET status = 'delivered', recovery_reason = NULL, stock_held = 0, updated_at = @ts
      WHERE id = @orderId AND status != 'delivered'
   `).run({ orderId, ts: now() });
 

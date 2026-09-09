@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { createOrder, getOrder } from '../services/orders.js';
 import { previewPromo } from '../services/promo.js';
 import { reconcileOrder } from '../services/reconcile.js';
+import { suggestAlternatives } from '../services/inventory.js';
 
 const router = express.Router();
 const getProductPrice = db.prepare('SELECT price FROM products WHERE sku = ?');
@@ -19,7 +20,14 @@ router.post('/', async (req, res) => {
     clientOrderId: clientOrderId || null,
   });
 
-  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  if (result.error) {
+    const body = { error: result.error };
+    if (result.error === 'out_of_stock') {
+      body.message = 'Этот товар только что раскупили';
+      body.alternatives = suggestAlternatives(sku);
+    }
+    return res.status(result.status || 400).json(body);
+  }
 
   if (!result.reused) {
     try {
