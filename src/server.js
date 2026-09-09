@@ -12,6 +12,7 @@ import adminRouter from './routes/admin.js';
 import { providerA, providerB } from './routes/providers.js';
 import { makeDebugRouter } from './routes/debug.js';
 import { startRecoveryLoop } from './services/fulfillment.js';
+import { startReservationSweeper } from './services/reservations.js';
 
 migrate();
 seed({ reset: false });
@@ -34,4 +35,5 @@ app.use(express.static(path.join(config.root, 'public')));
 app.listen(config.port, '0.0.0.0', () => {
   console.log(`ggsel-copy running on port ${config.port}`);
   startRecoveryLoop();
+  startReservationSweeper();
 });

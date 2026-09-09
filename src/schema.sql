@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS orders (
   status           TEXT NOT NULL DEFAULT 'created',
   recovery_reason  TEXT,
   stock_held       INTEGER NOT NULL DEFAULT 0,
+  reserved_until   TEXT,
   created_at       TEXT NOT NULL,
   updated_at       TEXT NOT NULL
 );

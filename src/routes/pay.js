@@ -4,11 +4,14 @@ import { config } from '../config.js';
 import { db } from '../db.js';
 
 const router = express.Router();
-const getOrder = db.prepare('SELECT id, amount, currency FROM orders WHERE id = ?');
+const getOrder = db.prepare('SELECT id, amount, currency, status FROM orders WHERE id = ?');
 
 router.post('/:orderId', async (req, res) => {
   const order = getOrder.get(req.params.orderId);
   if (!order) return res.status(404).json({ error: 'unknown_order' });
+  if (order.status === 'expired') {
+    return res.status(409).json({ error: 'reservation_expired', status: order.status });
+  }
 
   const failed = (req.body?.result || 'success') === 'failed';
   const payload = {
