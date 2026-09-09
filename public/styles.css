@@ -348,6 +348,11 @@ button { font: inherit; cursor: pointer; }
 .m-timer, .res-timer { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: #eef2ff; color: #3730a3; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
 .m-timer.is-soon, .res-timer.is-soon { background: #fee2e2; color: #b91c1c; }
 
+.resume-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; padding: 10px 14px; border-radius: 10px; background: #fff7ed; border: 1px solid #fdba74; font-size: 13px; font-weight: 600; }
+.resume-bar__actions { display: flex; gap: 8px; }
+.resume-bar button { border: 0; border-radius: 8px; padding: 7px 12px; font-weight: 700; background: var(--accent); color: #fff; }
+.resume-bar button.ghost { background: #e6e8eb; color: #374151; }
+
 @media (max-width: 1000px) {
   .services { grid-template-columns: repeat(6, 1fr); }
   .cards { grid-template-columns: repeat(3, 1fr); }

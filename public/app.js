@@ -287,6 +287,61 @@ async function resyncCatalog() {
   } catch {}
 }
 
+const PENDING_KEY = 'ggsel_pending';
+const TERMINAL = new Set(['delivered', 'payment_failed', 'expired']);
+const getPending = () => {
+  try {
+    return JSON.parse(localStorage.getItem(PENDING_KEY) || 'null');
+  } catch {
+    return null;
+  }
+};
+const setPending = (o) => {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(o));
+  } catch {}
+};
+const clearPending = () => {
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {}
+};
+
+async function renderResumeBar() {
+  const pending = getPending();
+  if (!pending?.id) return;
+  let order;
+  try {
+    order = (await api('/api/orders/' + encodeURIComponent(pending.id))).order;
+  } catch {
+    return clearPending();
+  }
+  if (TERMINAL.has(order.status)) return clearPending();
+
+  let bar = $('#resumeBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'resumeBar';
+    bar.className = 'resume-bar';
+    $('.page').prepend(bar);
+  }
+  const paid = order.status !== 'created';
+  bar.innerHTML = `
+    <span>${paid ? 'Заказ оплачен, идёт выдача' : 'Незавершённый заказ'}: <b>${order.sku}</b> (${order.id})</span>
+    <span class="resume-bar__actions">
+      <button id="resumeGo">${paid ? 'Открыть статус' : 'Продолжить оплату'}</button>
+      <button id="resumeDrop" class="ghost">Скрыть</button>
+    </span>`;
+  $('#resumeGo').addEventListener('click', () => {
+    if (paid) location.href = 'order.html?id=' + encodeURIComponent(order.id);
+    else openBuy(order.sku);
+  });
+  $('#resumeDrop').addEventListener('click', () => {
+    clearPending();
+    bar.remove();
+  });
+}
+
 const modal = $('#modal');
 const modalBody = $('#modalBody');
 let modalTimer = null;
@@ -302,7 +357,7 @@ const closeModal = () => {
 $('#modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-function openBuy(sku, presetPromo = '') {
+async function openBuy(sku, presetPromo = '') {
   const product = products.find((p) => p.sku === sku);
   if (!product) return;
   modal.hidden = false;
@@ -358,6 +413,7 @@ function openBuy(sku, presetPromo = '') {
           method: 'POST',
           body: JSON.stringify({ sku, idempotency_key: idem, promo_code: appliedPromo || undefined }),
         });
+        setPending({ id: r.order.id, sku });
         drawPay(r.order);
       } catch (e) {
         if (e.data?.error === 'out_of_stock') {
@@ -400,6 +456,7 @@ function openBuy(sku, presetPromo = '') {
   const drawExpired = () => {
     stage = 'lost';
     clearModalTimer();
+    clearPending();
     modalBody.innerHTML = `
       <h3>Бронь истекла</h3>
       <div class="m-note warn">Время на оплату вышло, бронь снята и товар вернулся в продажу. Оплата не списана.</div>
@@ -436,7 +493,15 @@ function openBuy(sku, presetPromo = '') {
         await api('/api/pay/' + order.id, { method: 'POST', body: JSON.stringify({ result }) });
       } catch (e) {
         if (e.data?.error === 'reservation_expired') return drawExpired();
-        throw e;
+        if (!$('#payErr')) {
+          modalBody.insertAdjacentHTML(
+            'beforeend',
+            `<div class="m-note err" id="payErr">Связь прервалась. Заказ мог быть оплачен — <a href="order.html?id=${encodeURIComponent(order.id)}">откройте статус заказа</a>. Повторное нажатие «Оплатить» ничего не задвоит.</div>`
+          );
+        }
+        $('#payOk').disabled = false;
+        $('#payFail').disabled = false;
+        return;
       }
       location.href = 'order.html?id=' + encodeURIComponent(order.id);
     };
@@ -469,6 +534,20 @@ function openBuy(sku, presetPromo = '') {
     draw();
   };
 
+  const pending = getPending();
+  if (pending?.id && pending.sku === sku) {
+    try {
+      const order = (await api('/api/orders/' + encodeURIComponent(pending.id))).order;
+      if (order.status === 'created') return drawPay(order);
+      if (!TERMINAL.has(order.status)) {
+        return void (location.href = 'order.html?id=' + encodeURIComponent(order.id));
+      }
+      clearPending();
+    } catch {
+      clearPending();
+    }
+  }
+
   draw();
 }
 
@@ -483,3 +562,4 @@ renderCurrency();
 renderChips();
 renderPromoBox();
 renderCards().then(connectStream);
+renderResumeBar();
