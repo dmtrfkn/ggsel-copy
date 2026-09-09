@@ -21,6 +21,7 @@
     "race:last-unit": "node scripts/last-unit-race.mjs",
     "race:reservation": "node scripts/reservation-timer.mjs",
     "race:resilience": "node scripts/resilience.mjs",
+    "race:search": "node scripts/search.mjs",
     "race:all": "node scripts/run-all.mjs"
   },
   "dependencies": {

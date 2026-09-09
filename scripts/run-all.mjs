@@ -63,6 +63,7 @@ const scripts = [
   'last-unit-race.mjs',
   'reservation-timer.mjs',
   'resilience.mjs',
+  'search.mjs',
 ];
 
 let failed = 0;
