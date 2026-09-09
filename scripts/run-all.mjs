@@ -60,6 +60,7 @@ const scripts = [
   'empty-pool-recovery.mjs',
   'race-promo.mjs',
   'provider-faults.mjs',
+  'last-unit-race.mjs',
 ];
 
 let failed = 0;
