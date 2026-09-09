@@ -4,6 +4,7 @@ import { config } from './config.js';
 import { migrate } from './db.js';
 import { seed } from './seed-core.js';
 import catalogRouter from './routes/catalog.js';
+import searchRouter from './routes/search.js';
 import streamRouter from './routes/stream.js';
 import ordersRouter from './routes/orders.js';
 import payRouter from './routes/pay.js';
@@ -21,6 +22,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/catalog', catalogRouter);
+app.use('/api/search', searchRouter);
 app.use('/api/stream', streamRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/pay', payRouter);

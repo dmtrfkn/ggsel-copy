@@ -32,6 +32,9 @@ export function migrate() {
   if (!hasColumn('orders', 'reserved_until')) {
     db.exec(`ALTER TABLE orders ADD COLUMN reserved_until TEXT`);
   }
+  if (!hasColumn('products', 'featured')) {
+    db.exec(`ALTER TABLE products ADD COLUMN featured INTEGER NOT NULL DEFAULT 0`);
+  }
 }
 
 migrate();

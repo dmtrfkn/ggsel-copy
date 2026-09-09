@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS products (
   price      INTEGER NOT NULL,
   currency   TEXT NOT NULL,
   image      TEXT,
-  stock      INTEGER NOT NULL DEFAULT 0
+  stock      INTEGER NOT NULL DEFAULT 0,
+  featured   INTEGER NOT NULL DEFAULT 0
 );
+CREATE INDEX IF NOT EXISTS idx_products_type ON products(type);
 
 CREATE TABLE IF NOT EXISTS key_pool (
   id                     INTEGER PRIMARY KEY AUTOINCREMENT,

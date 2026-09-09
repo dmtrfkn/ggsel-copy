@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db, migrate, now } from './db.js';
+import { config } from './config.js';
+import { generateProducts } from './seed-data/generate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(__dirname, 'seed-data', f), 'utf8'));
@@ -25,13 +27,27 @@ export function seed({ reset = false } = {}) {
   const apply = db.transaction(() => {
     const { products } = readJson('catalog.json');
     const insProduct = db.prepare(
-      `INSERT INTO products (sku, name, type, price, currency, image, stock)
-       VALUES (@sku, @name, @type, @price, @currency, @image, @stock)
+      `INSERT INTO products (sku, name, type, price, currency, image, stock, featured)
+       VALUES (@sku, @name, @type, @price, @currency, @image, @stock, 1)
        ON CONFLICT(sku) DO UPDATE SET
          name = excluded.name, type = excluded.type,
-         price = excluded.price, currency = excluded.currency, image = excluded.image`
+         price = excluded.price, currency = excluded.currency,
+         image = excluded.image, featured = 1`
     );
     for (const p of products) insProduct.run({ stock: 0, ...p });
+
+    // Большой синтетический каталог для поиска (задача 5). Генерим один раз:
+    // на re-seed без --reset строк уже достаточно и цикл пропускается.
+    const haveGenerated = db
+      .prepare(`SELECT COUNT(*) AS c FROM products WHERE featured = 0`)
+      .get().c;
+    if (haveGenerated < config.catalogSize) {
+      const insGen = db.prepare(
+        `INSERT OR IGNORE INTO products (sku, name, type, price, currency, image, stock, featured)
+         VALUES (@sku, @name, @type, @price, @currency, @image, @stock, 0)`
+      );
+      for (const p of generateProducts(config.catalogSize)) insGen.run(p);
+    }
 
     const { keys } = readJson('keys.json');
     const insKey = db.prepare(`INSERT OR IGNORE INTO key_pool (code, status) VALUES (?, 'free')`);
