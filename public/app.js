@@ -561,5 +561,15 @@ renderServices();
 renderCurrency();
 renderChips();
 renderPromoBox();
+const headerSearch = $('.search__input');
+const goSearch = () => {
+  const v = headerSearch.value.trim();
+  location.href = 'search.html' + (v ? '?q=' + encodeURIComponent(v) : '');
+};
+$('.search__go')?.addEventListener('click', goSearch);
+headerSearch?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') goSearch();
+});
+
 renderCards().then(connectStream);
 renderResumeBar();

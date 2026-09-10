@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Поиск по каталогу - GGSel-copy</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .search-page { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
+    .search-page h1 { font-size: 20px; margin: 0 0 16px; }
+    .search-page h1 a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 400; }
+    .sf { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr; gap: 10px; align-items: end; }
+    .sf label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .sf input, .sf select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font: inherit; background: #fff; }
+    .sf .price { display: flex; gap: 6px; }
+    .s-meta { margin: 14px 0 10px; color: var(--muted); font-size: 13px; }
+    .s-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; transition: opacity .12s; }
+    .s-list.is-loading { opacity: .55; }
+    .s-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .s-row__name { font-size: 13px; font-weight: 600; }
+    .s-row__sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .s-row__price { font-weight: 700; color: var(--green); white-space: nowrap; }
+    .s-row__buy { border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 700; background: var(--accent); color: #fff; }
+    .s-row__buy:disabled { background: #c9ccd1; color: #6b7178; cursor: not-allowed; }
+    .s-more { display: block; margin: 16px auto 0; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 18px; font-weight: 700; }
+    .s-empty { padding: 40px 0; text-align: center; color: var(--muted); }
+    @media (max-width: 720px) { .sf { grid-template-columns: 1fr 1fr; } .s-list { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="search-page">
+    <h1>Поиск по каталогу &nbsp; <a href="/">← на витрину</a></h1>
+
+    <div class="sf">
+      <div>
+        <label for="q">Запрос</label>
+        <input type="search" id="q" placeholder="Игра, приложение, услуга..." autocomplete="off" />
+      </div>
+      <div>
+        <label for="type">Тип</label>
+        <select id="type"><option value="">любой</option></select>
+      </div>
+      <div>
+        <label>Цена, ₽</label>
+        <div class="price">
+          <input type="number" id="min" placeholder="от" min="0" />
+          <input type="number" id="max" placeholder="до" min="0" />
+        </div>
+      </div>
+      <div>
+        <label for="sort">Сортировка</label>
+        <select id="sort">
+          <option value="relevance">по релевантности</option>
+          <option value="price_asc">дешевле</option>
+          <option value="price_desc">дороже</option>
+          <option value="name">по названию</option>
+        </select>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="s-meta" id="meta">—</div>
+    <div class="s-list" id="list"></div>
+    <div id="moreWrap"></div>
+  </div>
+
+  <script src="search.js"></script>
+</body>
+</html>
